@@ -96,7 +96,7 @@ const DB='catlog_db_v1';
 let data={cats:[{id:'cat1',name:'福ちゃん',goal:'',records:[]}],activeCatId:'cat1'};
 let editingId=null;
 const $=id=>document.getElementById(id);
-const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats;
+const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats[0];
 
 function load(){try{const x=localStorage.getItem(DB);if(x){const parsed=JSON.parse(x);if(parsed.cats&&parsed.cats.length)data=parsed}}catch(e){console.warn(e)}}
 function save(){localStorage.setItem(DB,JSON.stringify(data));render()}
@@ -165,7 +165,7 @@ function newRecord(id=null){
       reader.onload = function(el) {
         $('photoPreview').innerHTML = '<img class="photo" src="' + el.target.result + '" id="prevImg" style="margin-top:8px;">';
       };
-      reader.readAsDataURL(files[0]);
+      reader.readAsDataURL(files);
     }
   };
 }
@@ -191,28 +191,21 @@ function saveRecord(){
   const imgEl = $('prevImg');
   const fileInput = $('rPhoto');
   
-  // ── 💡 写真の容量オーバー対策（自動縮小処理） ──
   if(fileInput && fileInput.files && fileInput.files.length > 0 && imgEl) {
     const canvas = document.createElement('canvas');
     const ctx = canvas.getContext('2d');
     const img = new Image();
     img.onload = function() {
-      // 最大幅を300ピクセルに縮小して軽量化
       const maxW = 300;
       const scale = maxW / img.width;
       canvas.width = maxW;
       canvas.height = img.height * scale;
       ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      r.photo = canvas.toDataURL('image/jpeg', 0.7); // 画質を少し落としてさらに軽量化
+      r.photo = canvas.toDataURL('image/jpeg', 0.7);
       finish();
     };
     img.src = imgEl.src;
   } else {
-    // 新しく写真を選ばなかった場合は、既存の写真をそのまま維持
-    if(editingId && !r.photo && imgEl) {
-      r.photo = imgEl.src;
-    }
     finish();
   }
 }
-
