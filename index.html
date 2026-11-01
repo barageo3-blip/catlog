@@ -10,10 +10,8 @@
 :root{--bg:#f5f6f2;--card:#fff;--ink:#25332c;--muted:#718078;--accent:#5b7568;--accent2:#e5eee8;--line:#e4e9e4;--danger:#b64c4c;--shadow:0 5px 18px #26352b0c}
 *{box-sizing:border-box}
 body{
-  margin:0;
-  background:var(--bg);
-  color:var(--ink);
-  font-family: "Hiragino Kaku Gothic ProN", "Meiryo UI", Meiryo, system-ui, -apple-system, "Noto Sans JP", sans-serif;
+  margin:0; background:var(--bg); color:var(--ink);
+  font-family: "Hiragino Kaku Gothic ProN", "Meiryo UI", Meiryo, system-ui, -apple-system, sans-serif;
   padding-bottom:88px;
 }
 header{background:var(--accent);color:white;padding:22px 18px 18px;border-radius:0 0 22px 22px}
@@ -29,15 +27,7 @@ textarea{min-height:82px;resize:vertical}label{display:block;font-size:12px;font
 nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:5;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom))}
 nav button{background:transparent;color:var(--muted);flex:1;max-width:150px;padding:8px 3px;font-size:11px}nav button.active{color:var(--accent);background:var(--accent2)}
 nav .ico{display:block;font-size:19px;margin-bottom:2px}
-canvas {
-  width: 100%;
-  height: 230px;
-  display: block;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 8px;
-  opacity: 0.95;
-}
+canvas { width: 100%; height: 230px; display: block; background: #ffffff; border-radius: 12px; padding: 8px; opacity: 0.95; }
 .record{padding:12px 0;border-top:1px solid var(--line)}.record:first-child{border-top:0}.record .date{font-size:12px;color:var(--muted)}
 .photo{width:62px;height:62px;object-fit:cover;border-radius:10px;background:var(--accent2)}
 .empty{text-align:center;padding:28px 10px;color:var(--muted);font-size:13px}
@@ -53,7 +43,7 @@ canvas {
  <div class="card">
   <div class="row between"><div><div class="muted">最新の体重</div><div class="big" id="latestWeight">-- <span class="unit">kg</span></div><div class="muted" id="latestDate">まだ記録がありません</div></div><div style="text-align:right"><div class="muted">目標体重</div><div style="font-size:21px;font-weight:700" id="goalDisplay">未設定</div><button class="ghost small" onclick="showTab('settings')">設定する</button></div></div>
  </div>
- <div class="card"><div class="row between"><h2>体重の推推移</h2><span class="pill">直近12か月</span></div><canvas id="homeChart" width="650" height="260"></canvas><div class="muted" id="chartHint">体重を登録するとグラフが表示されます。</div></div>
+ <div class="card"><div class="row between"><h2>体重の推移</h2><span class="pill">直近12か月</span></div><canvas id="homeChart" width="650" height="260"></canvas><div class="muted" id="chartHint">体重を登録するとグラフが表示されます。</div></div>
  <div class="card"><div class="row between"><h2>最近の記録</h2><button class="secondary small" onclick="showTab('records')">すべて見る</button></div><div id="recentList"></div></div>
  <button style="width:100%;padding:15px" onclick="newRecord()">＋ 体重を記録する</button>
 </section>
@@ -64,10 +54,8 @@ canvas {
 <section id="compare">
  <div class="card">
   <h2>年度別の体重比較</h2>
-  <p class="muted">4月〜翌年3月を1年度として、同じ月に重ねて比較します。</p>
   <div class="formgrid"><div><label>比較する年度①</label><select id="yearA" onchange="drawCompare()"></select></div><div><label>比較する年度②</label><select id="yearB" onchange="drawCompare()"></select></div></div>
   <canvas id="compareChart" width="650" height="280"></canvas>
-  <div class="notice">各月の記録のうち、その月の平均体重を表示します。記録がない月は線をつなぎません。</div>
  </div>
 </section>
 <section id="settings">
@@ -76,12 +64,11 @@ canvas {
   <label>目標体重（kg）</label><input id="goal" type="number" step="0.01" min="0" placeholder="例：5.0">
   <button style="width:100%;margin-top:14px" onclick="saveSettings()">設定を保存</button>
  </div>
- <div class="card"><h2>データのバックアップ</h2><p class="muted">記録・健康メモ・写真を含むデータをJSONで保存できます。CSVは体重記録とメモの一覧を出力します。</p>
+ <div class="card"><h2>データのバックアップ</h2>
   <button style="width:100%;margin-bottom:8px" onclick="exportCSV()">CSVを書き出す</button>
-  <button class="secondary" style="width:100%;margin-bottom:8px" onclick="exportJSON()">全データをバックアップ（写真含む）</button>
+  <button class="secondary" style="width:100%;margin-bottom:8px" onclick="exportJSON()">全データをバックアップ</button>
   <label class="btn secondary" style="display:block;text-align:center">バックアップを復元<input type="file" accept=".json,application/json" onchange="importJSON(event)" style="display:none"></label>
  </div>
- <div class="card"><h2>このアプリについて</h2><p class="muted">CatLog 初期版 / データはこのブラウザ内に保存されます。別のスマホやブラウザとは自動共有されません。</p><div class="notice">写真は端末内のブラウザ保存領域を使います。容量に上限があるため、定期的にJSONバックアップをおすすめします。ブラウザのデータ削除・アプリ再インストールで記録が消える場合があります。</div></div>
 </section>
 </main>
 <nav>
@@ -96,116 +83,120 @@ const DB='catlog_db_v1';
 let data={cats:[{id:'cat1',name:'福ちゃん',goal:'',records:[]}],activeCatId:'cat1'};
 let editingId=null;
 const $=id=>document.getElementById(id);
-const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats[0];
-
-function load(){try{const x=localStorage.getItem(DB);if(x){const parsed=JSON.parse(x);if(parsed.cats&&parsed.cats.length)data=parsed}}catch(e){console.warn(e)}}
+const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats;
+function load(){try{const x=localStorage.getItem(DB);if(x){const parsed=JSON.parse(x);if(parsed.cats&&parsed.cats.length)data=parsed}}catch(e){}}
 function save(){localStorage.setItem(DB,JSON.stringify(data));render()}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
-
 function showTab(t){
   document.querySelectorAll('main section').forEach(x=>x.classList.toggle('active',x.id===t));
   document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
   if(t==='compare')setupYears();
 }
-
 function newRecord(id=null){
-  editingId=id;
-  const r=id?cat().records.find(x=>x.id===id):null;
-  const date=r?.date||new Date().toISOString().slice(0,10);
-  const weight=r?.weight||'';
-  const memo=r?.memo||'';
-  const health=r?.health||'';
-  const photo=r?.photo||'';
-  
-  const sheba = r?.sheba !== undefined ? r.sheba : 5;
-  const rc = r?.rc !== undefined ? r.rc : 15;
-  const kan = r?.kan !== undefined ? r.kan : 20;
-  const foodMemo = r?.foodMemo || '';
-
-  const overlay=document.createElement('div');
-  overlay.id='modal';
+  editingId=id; const r=id?cat().records.find(x=>x.id===id):null;
+  const date=r?.date||new Date().toISOString().slice(0,10), weight=r?.weight||'', memo=r?.memo||'', health=r?.health||'', photo=r?.photo||'';
+  const sheba=r?.sheba!==undefined?r.sheba:5, rc=r?.rc!==undefined?r.rc:15, kan=r?.kan!==undefined?r.kan:20, foodMemo=r?.foodMemo||'';
+  const overlay=document.createElement('div'); overlay.id='modal';
   overlay.style='position:fixed;inset:0;background:#0008;z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:12px';
-  overlay.innerHTML=`<div style="background:white;border-radius:20px 20px 14px 14px;padding:20px;width:100%;max-width:620px;max-height:92vh;overflow:auto">
-    <div class="row between"><h2>${r?'記録を編集':'体重を記録'}</h2><button class="ghost" onclick="document.getElementById('modal').remove()">閉じる</button></div>
+  overlay.innerHTML=`<div style="background:white;border-radius:20px;padding:20px;width:100%;max-width:620px;max-height:92vh;overflow:auto">
+    <div class="row between"><h2>${r?'記録を編集':'体重を記録'}</h2><button class="ghost" onclick="$('modal').remove()">閉じる</button></div>
     <div class="formgrid">
       <div><label>測定日</label><input id="rDate" type="date" value="${date}"></div>
-      <div><label>体重（kg）</label><input id="rWeight" type="number" min="0" step="0.01" value="${weight}" placeholder="例：5.20"></div>
-      
-      <div class="full" style="background:#fcfdfa; border:1px solid #e4e9e4; border-radius:12px; padding:14px; margin-top:10px;">
+      <div><label>体重（kg）</label><input id="rWeight" type="number" min="0" step="0.01" value="${weight}"></div>
+      <div class="full" style="background:#fcfdfa; border:1px solid #e4e9e4; border-radius:12px; padding:14px;">
         <h3 style="margin:0 0 10px; font-size:14px; color:#5b7568;">🍽️ 食事記録</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
-          <div><label style="margin:0; font-size:11px;">Sheba (g)</label><input id="rSheba" type="number" min="0" value="${sheba}"></div>
-          <div><label style="margin:0; font-size:11px;">ロイヤルカナン (g)</label><input id="rRc" type="number" min="0" value="${rc}"></div>
-          <div><label style="margin:0; font-size:11px;">水分補給健康缶 (g)</label><input id="rKan" type="number" min="0" value="${kan}"></div>
+          <div><label style="font-size:11px;">Sheba</label><input id="rSheba" type="number" value="${sheba}"></div>
+          <div><label style="font-size:11px;">ロイヤル</label><input id="rRc" type="number" value="${rc}"></div>
+          <div><label style="font-size:11px;">健康缶</label><input id="rKan" type="number" value="${kan}"></div>
         </div>
-        <label style="margin-top:8px;">食事の例外メモ</label>
-        <input id="rFoodMemo" type="text" value="${esc(foodMemo)}" placeholder="例：おやつを少しプラス、残したなど">
+        <label>例外メモ</label><input id="rFoodMemo" type="text" value="${esc(foodMemo)}">
       </div>
-
-      <div class="full"><label>体調・健康メモ</label><textarea id="rHealth" placeholder="食欲、便の状態、気になる症状など">${esc(health)}</textarea></div>
-      <div class="full"><label>その他のメモ</label><textarea id="rMemo" placeholder="気づいたこと">${esc(memo)}</textarea></div>
-      
-      <div class="full"><label>写真（任意）</label>
-        <input id="rPhoto" type="file" accept="image/*">
-        <div id="photoPreview">${photo?'<img class="photo" src="'+photo+'" id="prevImg">':''}</div>
-      </div>
+      <div class="full"><label>体調メモ</label><textarea id="rHealth">${esc(health)}</textarea></div>
+      <div class="full"><label>その他メモ</label><textarea id="rMemo">${esc(memo)}</textarea></div>
+      <div class="full"><label>写真</label><input id="rPhoto" type="file" accept="image/*"><div id="photoPreview">${photo?'<img class="photo" src="'+photo+'" id="prevImg">':''}</div></div>
     </div>
-    <div class="row between" style="margin-top:16px;">
-      ${r?'<button class="danger" style="padding:11px 20px" onclick="deleteRecord(\''+r.id+'\')">削除</button>':''}
-      <button style="flex:1; margin-left:8px;" onclick="saveRecord()">保存する</button>
-    </div>
+    <div class="row between" style="margin-top:16px;">${r?'<button class="danger" onclick="deleteRecord(\''+r.id+'\')">削除</button>':''}<button style="flex:1;" onclick="saveRecord()">保存する</button></div>
   </div>`;
   document.body.appendChild(overlay);
-
-  $('rPhoto').onchange = function(e) {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      const reader = new FileReader();
-      reader.onload = function(el) {
-        $('photoPreview').innerHTML = '<img class="photo" src="' + el.target.result + '" id="prevImg" style="margin-top:8px;">';
-      };
-      reader.readAsDataURL(files);
+  $('rPhoto').onchange=e=>{
+    const fs=e.target.files; if(fs&&fs.length){
+      const rd=new FileReader(); rd.onload=el=>{$('photoPreview').innerHTML='<img class="photo" src="'+el.target.result+'" id="prevImg">';}; rd.readAsDataURL(fs[0]);
     }
   };
 }
-
 function saveRecord(){
-  const date=$('rDate').value, weight=parseFloat($('rWeight').value);
-  if(!date||!Number.isFinite(weight)||weight<=0){toast('日付と正しい体重を入力してください');return}
+  const d=$('rDate').value, w=parseFloat($('rWeight').value); if(!d||!Number.isFinite(w)||w<=0){toast('正しい値を入力してください');return}
   const r=editingId?cat().records.find(x=>x.id===editingId):{id:'r'+Date.now(),photo:''};
-  r.date=date; r.weight=weight;
-  r.sheba = parseFloat($('rSheba').value) || 0;
-  r.rc = parseFloat($('rRc').value) || 0;
-  r.kan = parseFloat($('rKan').value) || 0;
-  r.foodMemo = $('rFoodMemo').value.trim();
-  r.health=$('rHealth').value.trim(); r.memo=$('rMemo').value.trim();
-  
-  const finish=()=>{
-    if(!editingId)cat().records.push(r);
-    cat().records.sort((a,b)=>a.date.localeCompare(b.date));
-    const m=$('modal'); if(m) m.remove();
-    save(); toast('記録を保存しました');
-  };
-
-  const imgEl = $('prevImg');
-  const fileInput = $('rPhoto');
-  
-  if(fileInput && fileInput.files && fileInput.files.length > 0 && imgEl) {
-    const canvas = document.createElement('canvas');
-    const ctx = canvas.getContext('2d');
-    const img = new Image();
-    img.onload = function() {
-      const maxW = 300;
-      const scale = maxW / img.width;
-      canvas.width = maxW;
-      canvas.height = img.height * scale;
-      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-      r.photo = canvas.toDataURL('image/jpeg', 0.7);
-      finish();
-    };
-    img.src = imgEl.src;
-  } else {
-    finish();
-  }
+  r.date=d; r.weight=w; r.sheba=parseFloat($('rSheba').value)||0; r.rc=parseFloat($('rRc').value)||0; r.kan=parseFloat($('rKan').value)||0; r.foodMemo=$('rFoodMemo').value.trim(); r.health=$('rHealth').value.trim(); r.memo=$('rMemo').value.trim();
+  const fin=()=>{ if(!editingId)cat().records.push(r); cat().records.sort((a,b)=>a.date.localeCompare(b.date)); if($('modal'))$('modal').remove(); save(); toast('保存しました') };
+  const im=$('prevImg'), fi=$('rPhoto');
+  if(fi&&fi.files&&fi.files.length&&im){
+    const cv=document.createElement('canvas'), cx=cv.getContext('2d'), ig=new Image();
+    ig.onload=()=>{ const mw=300, sc=mw/ig.width; cv.width=mw; cv.height=ig.height*sc; cx.drawImage(ig,0,0,cv.width,cv.height); r.photo=cv.toDataURL('image/jpeg',0.7); fin() };
+    ig.src=im.src;
+  }else{ if(editingId&&im){r.photo=im.src} fin() }
 }
+function deleteRecord(id){ if(!confirm('削除しますか？'))return; cat().records=cat().records.filter(x=>x.id!==id); if($('modal'))$('modal').remove(); save(); toast('削除しました') }
+function saveSettings(){cat().name=$('catName').value.trim()||'福ちゃん'; cat().goal=$('goal').value; save(); toast('保存しました')}
+function fmtDate(s){return new Date(s+'T00:00:00').toLocaleDateString('ja-JP')}
+function render(){
+  const c=cat(), rs=[...c.records].sort((a,b)=>b.date.localeCompare(a.date)), lat=rs[0];
+  $('latestWeight').innerHTML=lat?`${lat.weight.toFixed(2)} <span class="unit">kg</span>`:'-- <span class="unit">kg</span>';
+  $('latestDate').textContent=lat?'測定日：'+fmtDate(lat.date):'記録がありません';
+  $('goalDisplay').textContent=c.goal?c.goal+' kg':'未設定'; $('catName').value=c.name||''; $('goal').value=c.goal||'';
+  $('recentList').innerHTML=rs.length?rs.slice(0,3).map(recordHTML).join(''):'<div class="empty">記録がありません。</div>';
+  $('recordList').innerHTML=rs.length?rs.map(recordHTML).join(''):'<div class="empty">記録がありません。</div>';
+  drawChart($('homeChart'),rs.slice().reverse().slice(-12).map(r=>({label:r.date.slice(5),value:r.weight})));
+  $('chartHint').textContent=rs.length?'記録件数：'+rs.length+'件':'';
+}
+function recordHTML(r){
+  return `<div class="record"><div class="row between"><div><div class="date">${fmtDate(r.date)}</div><strong style="font-size:19px">${Number(r.weight).toFixed(2)} kg</strong></div><div class="row">${r.photo?'<img class="photo" src="'+r.photo+'">':''}<button class="secondary small" onclick="newRecord('${r.id}')">編集</button></div></div>
+    <div style="font-size:11px; color:#5b7568; margin-top:4px; background:#fcfdfa; padding:4px 8px; border-radius:6px; display:inline-block;">🍽️ S:${r.sheba||0}g / R:${r.rc||0}g / 缶:${r.kan||0}g ${r.foodMemo?'('+esc(r.foodMemo)+')':''}</div>
+    ${r.health?'<div style="font-size:12px; margin-top:6px">🩺 '+esc(r.health)+'</div>':''}${r.memo?'<div style="font-size:12px; margin-top:4px">📝 '+esc(r.memo)+'</div>':''}</div>`;
+}
+function drawChart(canvas,items){
+  const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h); ctx.font='12px sans-serif'; ctx.fillStyle='#718078';
+  if(!items.length){ctx.fillText('記録がありません',w/2-50,h/2);return}
+  const vals=items.map(x=>x.value),min=Math.min(...vals)-.1,max=Math.max(...vals)+.1,left=48,right=18,top=24,bottom=38;
+  ctx.strokeStyle='#edf1ee'; ctx.lineWidth=1;
+  for(let i=0;i<5;i++){ let y=top+(h-top-bottom)*i/4; ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(w-right,y); ctx.stroke(); ctx.fillText((max-(max-min)*i/4).toFixed(1),8,y+4) }
+  const pts=items.map((x,i)=>({x:left+(w-left-right)*(items.length===1?.5:i/(items.length-1)),y:top+(h-top-bottom)*(max-x.value)/(max-min||1)}));
+  ctx.strokeStyle='#5b7568'; ctx.lineWidth=3.5; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.beginPath(); pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
+  pts.forEach((p,i)=>{ ctx.strokeStyle='#5b7568'; ctx.lineWidth=2.5; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(p.x,p.y,5,0,Math.PI*2); ctx.fill(); ctx.stroke(); ctx.fillStyle='#718078'; ctx.fillText(items[i].label,p.x-14,h-10) });
+}
+function drawCompare(){
+  const ya=+$('yearA').value,yb=+$('yearB').value; if(!ya)return;
+  const monthVals=y=>Array.from({length:12},(_,i)=>{
+    const m=(i+3)%12+1, year=m>=4?y:y+1; const rr=cat().records.filter(r=>{ const d=new Date(r.date+'T00:00:00'); return d.getFullYear()===year&&d.getMonth()+1===m }); return rr.length?rr.reduce((s,r)=>s+r.weight,0)/rr.length:null
+  });
+  const canvas=$('compareChart'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h);
+  const all=[...monthVals(ya),...monthVals(yb)].filter(v=>v!==null); if(!all.length){ctx.fillStyle='#718078';ctx.fillText('記録がありません',w/2-50,h/2);return}
+  const min=Math.min(...all)-.1,max=Math.max(...all)+.1,left=48,right=18,top=25,bottom=42;
+  ctx.font='11px sans-serif'; ctx.fillStyle='#718078'; ctx.strokeStyle='#edf1ee';
+  for(let i=0;i<5;i++){ let y=top+(h-top-bottom)*i/4; ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(w-right,y); ctx.stroke(); ctx.fillText((max-(max-min)*i/4).toFixed(1),8,y+4) }
+  const months=['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月']; months.forEach((m,i)=>ctx.fillText(m,left+(w-left-right)*i/11-10,h-14));
+  [[ya,'#5b7568'],[yb,'#df9f6e']].forEach(([year,color])=>{
+    const vals=monthVals(year); ctx.strokeStyle=color; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.beginPath();
+    let started=false; const currentPts=[];
+    vals.forEach((v,i)=>{ if(v===null){started=false;return} const x=left+(w-left-right)*i/11,y=top+(h-top-bottom)*(max-v)/(max-min||1); currentPts.push({x,y}); if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y) });
+    ctx.stroke(); currentPts.forEach(p=>{ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); ctx.stroke() });
+  });
+}
+function exportCSV(){
+  const c=cat(); if(!c.records.length){toast('記録がありません');return}
+  let csv='\ufeff日付,体重(kg),Sheba(g),ロイヤルカナン(g),健康缶(g),食事メモ,体調メモ,その他メモ\n';
+  c.records.forEach(r=>csv+=`"${r.date}",${r.weight},${r.sheba||0},${r.rc||0},${r.kan||0},"${(r.foodMemo||'').replace(/"/g,'""')}","${(r.health||'').replace(/"/g,'""')}","${(r.memo||'').replace(/"/g,'""')}"\n`);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'}); const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`catlog_${c.name}.csv`;link.click();
+}
+function exportJSON(){ const blob=new Blob([JSON.stringify(data)],{type:'application/json'}); const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`catlog_backup.json`;link.click(); }
+function importJSON(e){
+  const file=e.target.files; if(!file||!file.length)return; const reader=new FileReader();
+  reader.onload=evt=>{ try{const parsed=JSON.parse(evt.target.result); if(parsed.cats){data=parsed;save();toast('復元しました')}else{toast('無効な形式です')}}catch(err){toast('失敗しました')} };
+  reader.readAsText(file[0]);
+}
+load(); render();
+</script>
+</body>
+</html>
