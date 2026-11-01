@@ -181,7 +181,7 @@ function drawCompare(){
     const vals=monthVals(year); ctx.strokeStyle=color; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.beginPath();
     let started=false; const currentPts=[];
     vals.forEach((v,i)=>{ if(v===null){started=false;return} const x=left+(w-left-right)*i/11,y=top+(h-top-bottom)*(max-v)/(max-min||1); currentPts.push({x,y}); if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y) });
-    ctx.stroke(); currentPts.forEach(p=>{ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); ctx.stroke() });
+    ctx.stroke(); currentPts.forEach(p=>{ ctx.strokeStyle=color; ctx.lineWidth=2; ctx.fillStyle='#ffffff'; ctx.beginPath(); arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); ctx.stroke() });
   });
 }
 function exportCSV(){
@@ -193,74 +193,16 @@ function exportCSV(){
 function exportJSON(){ const blob=new Blob([JSON.stringify(data)],{type:'application/json'}); const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`catlog_backup.json`;link.click(); }
 function importJSON(e){
   const file=e.target.files; if(!file||!file.length)return; const reader=new FileReader();
-  reader.onload=evt=>{ try{const parsed=JSON.parse(evt.target.result); if(parsed.cats){data=parsed;save();toast('復元しました')}else{toast('無効な形式です')}}catch(err){toast('失敗しました')} };
+  reader.onload=evt=>{ try{const parsed=JSON.parse(evt.target.result); if(parsed.cats){data=parsed;save();toast('復元しました');render()}else{toast('無効な形式です')}}catch(err){toast('失敗しました')} };
   reader.readAsText(file[0]);
 }
 
-// --- 【安全版】データ管理（バックアップ＆復元）の仕組み ---
-// 💡 全体を (function(){ ... })(); で囲むことで、既存のコードと絶対に干渉しないように工夫しました！
-(function() {
-  const btnExp = document.getElementById('btnExport');
-  const btnImpTrig = document.getElementById('btnImportTrigger');
-  const fileImp = document.getElementById('fileImport');
-
-  if (!btnExp || !btnImpTrig || !fileImp) return;
-
-  // 1. データをファイルとして保存する処理
-  btnExp.addEventListener('click', () => {
-    const allData = {};
-    for (let index = 0; index < localStorage.length; index++) {
-      const k = localStorage.key(index);
-      allData[k] = localStorage.getItem(k);
-    }
-    if (Object.keys(allData).length === 0) {
-      alert('保存するデータがまだありません。');
-      return;
-    }
-    const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `fukuchan_data_${new Date().toISOString().slice(0,10)}.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    alert('福ちゃんのデータをファイルに保存しました！');
-  });
-
-  // 2. ファイル選択画面を開く
-  btnImpTrig.addEventListener('click', () => {
-    fileImp.click();
-  });
-
-  // 3. データを読み込んで復元する処理
-  fileImp.addEventListener('change', (e) => {
-    const tgt = e.target.files;
-    if (!tgt || tgt.length === 0) return;
-    const rdr = new FileReader();
-    rdr.onload = (evt) => {
-      try {
-        const imported = JSON.parse(evt.target.result);
-        if (confirm('データを復元しますか？（現在のデータは上書きされます）')) {
-          localStorage.clear();
-          for (const key in imported) {
-            localStorage.setItem(key, imported[key]);
-          }
-          alert('福ちゃんのデータを復元しました！アプリを再起動します。');
-          window.location.reload();
-        }
-      } catch (err) {
-        alert('ファイルの読み込みに失敗しました。');
-      }
-    };
-    rdr.readAsText(tgt[0]);
-  });
-})();
+// 💾 新設した「福ちゃんのデータ管理」ボタンと、元々のバックアップ機能をバインド（紐付け）
+document.getElementById('btnExport').addEventListener('click', exportJSON);
+document.getElementById('btnImportTrigger').addEventListener('click', () => document.getElementById('fileImport').click());
+document.getElementById('fileImport').addEventListener('change', importJSON);
 
 load(); render();
-.readAsText(file);
-});
   
 </script>
 </body>
