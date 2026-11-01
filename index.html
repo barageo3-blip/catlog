@@ -13,7 +13,6 @@ body{
   margin:0;
   background:var(--bg);
   color:var(--ink);
-  /* ── 2. フォントの設定：メイリオUI風でスマホでも一番綺麗に見える組み合わせ ── */
   font-family: "Hiragino Kaku Gothic ProN", "Meiryo UI", Meiryo, system-ui, -apple-system, "Noto Sans JP", sans-serif;
   padding-bottom:88px;
 }
@@ -30,19 +29,15 @@ textarea{min-height:82px;resize:vertical}label{display:block;font-size:12px;font
 nav{position:fixed;bottom:0;left:0;right:0;background:#ffffffed;backdrop-filter:blur(12px);border-top:1px solid var(--line);display:flex;justify-content:center;z-index:5;padding:8px max(8px,env(safe-area-inset-right)) calc(8px + env(safe-area-inset-bottom))}
 nav button{background:transparent;color:var(--muted);flex:1;max-width:150px;padding:8px 3px;font-size:11px}nav button.active{color:var(--accent);background:var(--accent2)}
 nav .ico{display:block;font-size:19px;margin-bottom:2px}
-/* ── 3. グラフを可愛い雰囲気に馴染ませる設定 ── */
 canvas {
   width: 100%;
   height: 230px;
   display: block;
-  /* グラフの背景をほんのり白く、角を丸くして可愛い枠にします */
   background: #ffffff;
   border-radius: 12px;
   padding: 8px;
-  /* カクカクした線の印象を和らげるため、少しだけ透過させます */
   opacity: 0.95;
 }
-canvas{width:100%;height:230px;display:block}
 .record{padding:12px 0;border-top:1px solid var(--line)}.record:first-child{border-top:0}.record .date{font-size:12px;color:var(--muted)}
 .photo{width:62px;height:62px;object-fit:cover;border-radius:10px;background:var(--accent2)}
 .empty{text-align:center;padding:28px 10px;color:var(--muted);font-size:13px}
@@ -58,7 +53,7 @@ canvas{width:100%;height:230px;display:block}
  <div class="card">
   <div class="row between"><div><div class="muted">最新の体重</div><div class="big" id="latestWeight">-- <span class="unit">kg</span></div><div class="muted" id="latestDate">まだ記録がありません</div></div><div style="text-align:right"><div class="muted">目標体重</div><div style="font-size:21px;font-weight:700" id="goalDisplay">未設定</div><button class="ghost small" onclick="showTab('settings')">設定する</button></div></div>
  </div>
- <div class="card"><div class="row between"><h2>体重の推移</h2><span class="pill">直近12か月</span></div><canvas id="homeChart" width="650" height="260"></canvas><div class="muted" id="chartHint">体重を登録するとグラフが表示されます。</div></div>
+ <div class="card"><div class="row between"><h2>体重の推推移</h2><span class="pill">直近12か月</span></div><canvas id="homeChart" width="650" height="260"></canvas><div class="muted" id="chartHint">体重を登録するとグラフが表示されます。</div></div>
  <div class="card"><div class="row between"><h2>最近の記録</h2><button class="secondary small" onclick="showTab('records')">すべて見る</button></div><div id="recentList"></div></div>
  <button style="width:100%;padding:15px" onclick="newRecord()">＋ 体重を記録する</button>
 </section>
@@ -98,15 +93,22 @@ canvas{width:100%;height:230px;display:block}
 <div id="toast"></div>
 <script>
 const DB='catlog_db_v1';
-let data={cats:[{id:'cat1',name:'猫ちゃん',goal:'',records:[]}],activeCatId:'cat1'};
+let data={cats:[{id:'cat1',name:'福ちゃん',goal:'',records:[]}],activeCatId:'cat1'};
 let editingId=null;
 const $=id=>document.getElementById(id);
 const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats[0];
+
 function load(){try{const x=localStorage.getItem(DB);if(x){const parsed=JSON.parse(x);if(parsed.cats&&parsed.cats.length)data=parsed}}catch(e){console.warn(e)}}
 function save(){localStorage.setItem(DB,JSON.stringify(data));render()}
-function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'",'&#39;'}[c]))}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
-function showTab(t){document.querySelectorAll('main section').forEach(x=>x.classList.toggle('active',x.id===t));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));if(t==='compare')setupYears()}
+
+function showTab(t){
+  document.querySelectorAll('main section').forEach(x=>x.classList.toggle('active',x.id===t));
+  document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));
+  if(t==='compare')setupYears();
+}
+
 function newRecord(id=null){
   editingId=id;
   const r=id?cat().records.find(x=>x.id===id):null;
@@ -116,7 +118,6 @@ function newRecord(id=null){
   const health=r?.health||'';
   const photo=r?.photo||'';
   
-  // 食事データの初期値設定（記録があればそれを使い、なければデフォルト値を入れる）
   const sheba = r?.sheba !== undefined ? r.sheba : 5;
   const rc = r?.rc !== undefined ? r.rc : 15;
   const kan = r?.kan !== undefined ? r.kan : 20;
@@ -131,7 +132,6 @@ function newRecord(id=null){
       <div><label>測定日</label><input id="rDate" type="date" value="${date}"></div>
       <div><label>体重（kg）</label><input id="rWeight" type="number" min="0" step="0.01" value="${weight}" placeholder="例：5.20"></div>
       
-      <!-- ── 新設：食事メモエリア ── -->
       <div class="full" style="background:#fcfdfa; border:1px solid #e4e9e4; border-radius:12px; padding:14px; margin-top:10px;">
         <h3 style="margin:0 0 10px; font-size:14px; color:#5b7568;">🍽️ 食事記録</h3>
         <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
@@ -139,7 +139,7 @@ function newRecord(id=null){
           <div><label style="margin:0; font-size:11px;">ロイヤルカナン (g)</label><input id="rRc" type="number" min="0" value="${rc}"></div>
           <div><label style="margin:0; font-size:11px;">水分補給健康缶 (g)</label><input id="rKan" type="number" min="0" value="${kan}"></div>
         </div>
-        <label style="margin-top:8px;">食事の例外メモ（トッピング等）</label>
+        <label style="margin-top:8px;">食事の例外メモ</label>
         <input id="rFoodMemo" type="text" value="${esc(foodMemo)}" placeholder="例：おやつを少しプラス、残したなど">
       </div>
 
@@ -147,24 +147,25 @@ function newRecord(id=null){
       <div class="full"><label>その他のメモ</label><textarea id="rMemo" placeholder="気づいたこと">${esc(memo)}</textarea></div>
       
       <div class="full"><label>写真（任意）</label>
-        <!-- ギャラリー（ライブラリ）選択ができるように「capture="environment"」を削除 -->
         <input id="rPhoto" type="file" accept="image/*">
         <div id="photoPreview">${photo?'<img class="photo" src="'+photo+'">':''}</div>
       </div>
     </div>
-    <button style="width:100%;margin-top:16px" onclick="saveRecord()">保存する</button>
+    <div class="row between" style="margin-top:16px;">
+      ${r?'<button class="danger" style="padding:11px 20px" onclick="deleteRecord(\''+r.id+'\')">削除</button>':''}
+      <button style="flex:1; margin-left:8px;" onclick="saveRecord()">保存する</button>
+    </div>
   </div>`;
   document.body.appendChild(overlay);
 
-  // 写真選択時のリアルタイムプレビュー処理
   $('rPhoto').onchange = function(e) {
-    const file = e.target.files[0];
-    if (file) {
+    const files = e.target.files;
+    if (files && files.length > 0) {
       const reader = new FileReader();
       reader.onload = function(el) {
         $('photoPreview').innerHTML = '<img class="photo" src="' + el.target.result + '" style="margin-top:8px;">';
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(files);
     }
   };
 }
@@ -172,178 +173,147 @@ function newRecord(id=null){
 function saveRecord(){
   const date=$('rDate').value, weight=parseFloat($('rWeight').value);
   if(!date||!Number.isFinite(weight)||weight<=0){toast('日付と正しい体重を入力してください');return}
-  
   const r=editingId?cat().records.find(x=>x.id===editingId):{id:'r'+Date.now(),photo:''};
-  
-  r.date=date;
-  r.weight=weight;
-  
-  // 食事データの保存
+  r.date=date; r.weight=weight;
   r.sheba = parseFloat($('rSheba').value) || 0;
   r.rc = parseFloat($('rRc').value) || 0;
   r.kan = parseFloat($('rKan').value) || 0;
   r.foodMemo = $('rFoodMemo').value.trim();
-  
-  r.health=$('rHealth').value.trim();
-  r.memo=$('rMemo').value.trim();
-  
+  r.health=$('rHealth').value.trim(); r.memo=$('rMemo').value.trim();
   const fileInput=$('rPhoto');
   const hasFile=fileInput && fileInput.files && fileInput.files.length > 0;
-  
   const finish=()=>{
     if(!editingId)cat().records.push(r);
     cat().records.sort((a,b)=>a.date.localeCompare(b.date));
-    $('modal').remove();
-    save();
-    toast('記録を保存しました');
+    const m=$('modal'); if(m) m.remove();
+    save(); toast('記録を保存しました');
   };
-  
-  // ── 💡 ここが修正ポイントです ──
-  // 写真が新しく選択されている場合のみ読み込み処理を行い、ない場合はそのまま保存します
   if(hasFile){
     const reader=new FileReader();
-    reader.onload=()=>{
-      r.photo=reader.result;
-      finish();
-    };
-    reader.readAsDataURL(fileInput.files[0]);
-  }else{
-    finish();
-  }
+    reader.onload=()=>{ r.photo=reader.result; finish(); };
+    reader.readAsDataURL(fileInput.files);
+  }else{ finish(); }
 }
-function deleteRecord(id){if(!confirm('この記録を削除しますか？'))return;cat().records=cat().records.filter(x=>x.id!==id);save();toast('削除しました')}
-function saveSettings(){cat().name=$('catName').value.trim()||'猫ちゃん';cat().goal=$('goal').value;save();toast('設定を保存しました')}
+function deleteRecord(id){
+  if(!confirm('この記録を削除しますか？'))return;
+  cat().records=cat().records.filter(x=>x.id!==id);
+  const m=$('modal'); if(m) m.remove();
+  save(); toast('削除しました');
+}
+
+function saveSettings(){cat().name=$('catName').value.trim()||'福ちゃん';cat().goal=$('goal').value;save();toast('設定を保存しました')}
 function fmtDate(s){return new Date(s+'T00:00:00').toLocaleDateString('ja-JP')}
-function render(){const c=cat(),rs=[...c.records].sort((a,b)=>b.date.localeCompare(a.date)),latest=rs[0];$('latestWeight').innerHTML=latest?`${latest.weight.toFixed(2)} <span class="unit">kg</span>`:'-- <span class="unit">kg</span>';$('latestDate').textContent=latest?'測定日：'+fmtDate(latest.date):'まだ記録がありません';$('goalDisplay').textContent=c.goal?c.goal+' kg':'未設定';$('catName').value=c.name||'';$('goal').value=c.goal||'';
- $('recentList').innerHTML=rs.length?rs.slice(0,3).map(recordHTML).join(''):'<div class="empty">まだ記録がありません。最初の体重を登録しましょう。</div>';
- $('recordList').innerHTML=rs.length?rs.map(recordHTML).join(''):'<div class="empty">記録はまだありません。</div>';
- drawChart($('homeChart'),rs.slice().reverse().slice(-12).map(r=>({label:r.date.slice(5),value:r.weight})));
- $('chartHint').textContent=rs.length?'記録件数：'+rs.length+'件':'体重を登録するとグラフが表示されます。';
+
+function render(){
+  const c=cat(),rs=[...c.records].sort((a,b)=>b.date.localeCompare(a.date)),latest=rs[0];
+  $('latestWeight').innerHTML=latest?`${latest.weight.toFixed(2)} <span class="unit">kg</span>`:'-- <span class="unit">kg</span>';
+  $('latestDate').textContent=latest?'測定日：'+fmtDate(latest.date):'まだ記録がありません';
+  $('goalDisplay').textContent=c.goal?c.goal+' kg':'未設定';
+  $('catName').value=c.name||''; $('goal').value=c.goal||'';
+  $('recentList').innerHTML=rs.length?rs.slice(0,3).map(recordHTML).join(''):'<div class="empty">まだ記録がありません。</div>';
+  $('recordList').innerHTML=rs.length?rs.map(recordHTML).join(''):'<div class="empty">記録はまだありません。</div>';
+  drawChart($('homeChart'),rs.slice().reverse().slice(-12).map(r=>({label:r.date.slice(5),value:r.weight})));
+  $('chartHint').textContent=rs.length?'記録件数：'+rs.length+'件':'体重を登録するとグラフが表示されます。';
 }
-function recordHTML(r){return `<div class="record"><div class="row between"><div><div class="date">${fmtDate(r.date)}</div><strong style="font-size:19px">${Number(r.weight).toFixed(2)} kg</strong></div><div class="row">${r.photo?'<img class="photo" src="'+r.photo+'">':''}<button class="secondary small" onclick="newRecord('${r.id}')">編集</button><button class="danger small" onclick="deleteRecord('${r.id}')">削除</button></div></div>${r.health?'<div style="font-size:12px;margin-top:6px">🩺 '+esc(r.health)+'</div>':''}${r.memo?'<div style="font-size:12px;margin-top:4px">📝 '+esc(r.memo)+'</div>':''}</div>`}
+
+function recordHTML(r){
+  return `<div class="record">
+    <div class="row between">
+      <div><div class="date">${fmtDate(r.date)}</div><strong style="font-size:19px">${Number(r.weight).toFixed(2)} kg</strong></div>
+      <div class="row">
+        ${r.photo?'<img class="photo" src="'+r.photo+'">':''}
+        <button class="secondary small" onclick="newRecord('${r.id}')">編集</button>
+      </div>
+    </div>
+    <div style="font-size:11px; color:#5b7568; margin-top:4px; background:#fcfdfa; padding:4px 8px; border-radius:6px; display:inline-block;">
+      🍽️ S:${r.sheba||0}g / R:${r.rc||0}g / 缶:${r.kan||0}g ${r.foodMemo?'('+esc(r.foodMemo)+')':''}
+    </div>
+    ${r.health?'<div style="font-size:12px; margin-top:6px">🩺 '+esc(r.health)+'</div>':''}
+    ${r.memo?'<div style="font-size:12px; margin-top:4px">📝 '+esc(r.memo)+'</div>':''}
+  </div>`;
+}
+
 function drawChart(canvas,items){
   const ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
-  ctx.clearRect(0,0,w,h);
-  ctx.font='12px "Hiragino Kaku Gothic ProN", "Meiryo UI", sans-serif';
-  ctx.fillStyle='#718078';
+  ctx.clearRect(0,0,w,h); ctx.font='12px sans-serif'; ctx.fillStyle='#718078';
   if(!items.length){ctx.fillText('記録がありません',w/2-50,h/2);return}
   const vals=items.map(x=>x.value),min=Math.min(...vals)-.1,max=Math.max(...vals)+.1,left=48,right=18,top=24,bottom=38;
-  
-  // 背景のグリッド横線（エクセルっぽさを消すため、非常に薄く点線風に）
-  ctx.strokeStyle='#edf1ee';
-  ctx.lineWidth=1;
+  ctx.strokeStyle='#edf1ee'; ctx.lineWidth=1;
   for(let i=0;i<5;i++){
-    let y=top+(h-top-bottom)*i/4;
-    ctx.beginPath();
-    ctx.moveTo(left,y);
-    ctx.lineTo(w-right,y);
-    ctx.stroke();
+    let y=top+(h-top-bottom)*i/4; ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(w-right,y); ctx.stroke();
     ctx.fillText((max-(max-min)*i/4).toFixed(1),8,y+4);
   }
-  
   const pts=items.map((x,i)=>({x:left+(w-left-right)*(items.length===1?.5:i/(items.length-1)),y:top+(h-top-bottom)*(max-x.value)/(max-min||1)}));
-  
-  // 体重の推移グラフの線（太さを3にして、角を丸く）
-  ctx.strokeStyle='#5b7568';
-  ctx.lineWidth=3.5;
-  ctx.lineJoin='round';
-  ctx.lineCap='round';
-  ctx.beginPath();
-  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y));
-  ctx.stroke();
-  
-  // グラフの「点（ドット）」の装飾（白抜きの丸にしてアプリ感をアップ！）
+  ctx.strokeStyle='#5b7568'; ctx.lineWidth=3.5; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.beginPath();
+  pts.forEach((p,i)=>i?ctx.lineTo(p.x,p.y):ctx.moveTo(p.x,p.y)); ctx.stroke();
   pts.forEach((p,i)=>{
-    // 外枠の緑の円
-    ctx.strokeStyle='#5b7568';
-    ctx.lineWidth=2.5;
-    ctx.fillStyle='#ffffff';
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,5,0,Math.PI*2);
-    ctx.fill();
-    ctx.stroke();
-    
-    // 下部の日付ラベル
-    ctx.fillStyle='#718078';
-    ctx.fillText(items[i].label,p.x-14,h-10);
+    ctx.strokeStyle='#5b7568'; ctx.lineWidth=2.5; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(p.x,p.y,5,0,Math.PI*2); ctx.fill(); ctx.stroke();
+    ctx.fillStyle='#718078'; ctx.fillText(items[i].label,p.x-14,h-10);
   });
 }
 
-function fiscalYear(date){const d=new Date(date+'T00:00:00');return d.getMonth()>=3?d.getFullYear():d.getFullYear()-1}
-
-function setupYears(){const ys=[...new Set(cat().records.map(r=>fiscalYear(r.date)))].sort((a,b)=>b-a);const now=new Date(),current=now.getMonth()>=3?now.getFullYear():now.getFullYear()-1;if(!ys.includes(current))ys.unshift(current);const a=$('yearA'),b=$('yearB'),oldA=a.value,oldB=b.value;a.innerHTML=ys.map(y=>`<option value="${y}">${y}年度</option>`).join('');b.innerHTML=ys.map(y=>`<option value="${y}">${y}年度</option>`).join('');a.value=ys.includes(+oldA)?oldA:ys[0];b.value=ys.includes(+oldB)?oldB:(ys[1]??ys[0]);drawCompare()}
-
 function drawCompare(){
-  const ya=+$('yearA').value,yb=+$('yearB').value;
-  if(!ya)return;
+  const ya=+$('yearA').value,yb=+$('yearB').value; if(!ya)return;
   const monthVals=y=>Array.from({length:12},(_,i)=>{
-    const m=(i+3)%12+1;
-    const year=m>=4?y:y+1;
+    const m=(i+3)%12+1, year=m>=4?y:y+1;
     const rr=cat().records.filter(r=>{
-      const d=new Date(r.date+'T00:00:00');
-      return d.getFullYear()===year&&d.getMonth()+1===m;
+      const d=new Date(r.date+'T00:00:00'); return d.getFullYear()===year&&d.getMonth()+1===m;
     });
     return rr.length?rr.reduce((s,r)=>s+r.weight,0)/rr.length:null;
   });
-  
-  const canvas=$('compareChart'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height;
-  ctx.clearRect(0,0,w,h);
+  const canvas=$('compareChart'),ctx=canvas.getContext('2d'),w=canvas.width,h=canvas.height; ctx.clearRect(0,0,w,h);
   const all=[...monthVals(ya),...monthVals(yb)].filter(v=>v!==null);
   if(!all.length){ctx.fillStyle='#718078';ctx.fillText('比較できる記録がありません',w/2-90,h/2);return}
   const min=Math.min(...all)-.1,max=Math.max(...all)+.1,left=48,right=18,top=25,bottom=42;
-  
-  ctx.font='11px sans-serif';
-  ctx.fillStyle='#718078';
-  ctx.strokeStyle='#edf1ee';
-  
-  // 年度比較用の背景グリッド
+  ctx.font='11px sans-serif'; ctx.fillStyle='#718078'; ctx.strokeStyle='#edf1ee';
   for(let i=0;i<5;i++){
-    let y=top+(h-top-bottom)*i/4;
-    ctx.beginPath();
-    ctx.moveTo(left,y);
-    ctx.lineTo(w-right,y);
-    ctx.stroke();
+    let y=top+(h-top-bottom)*i/4; ctx.beginPath(); ctx.moveTo(left,y); ctx.lineTo(w-right,y); ctx.stroke();
     ctx.fillText((max-(max-min)*i/4).toFixed(1),8,y+4);
   }
-  
   const months=['4月','5月','6月','7月','8月','9月','10月','11月','12月','1月','2月','3月'];
   months.forEach((m,i)=>ctx.fillText(m,left+(w-left-right)*i/11-10,h-14));
-  
-  // 今年度と前年度の比較線の色を優しく（くすみグリーンとくすみオレンジ）
   [[ya,'#5b7568'],[yb,'#df9f6e']].forEach(([year,color])=>{
-    const vals=monthVals(year);
-    ctx.strokeStyle=color;
-    ctx.lineWidth=3;
-    ctx.lineJoin='round';
-    ctx.lineCap='round';
-    ctx.beginPath();
-    let started=false;
-    
-    const currentPts = [];
+    const vals=monthVals(year); ctx.strokeStyle=color; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.lineCap='round'; ctx.beginPath();
+    let started=false; const currentPts = [];
     vals.forEach((v,i)=>{
       if(v===null){started=false; return}
-      const x=left+(w-left-right)*i/11,y=top+(h-top-bottom)*(max-v)/(max-min||1);
-      currentPts.push({x,y});
+      const x=left+(w-left-right)*i/11,y=top+(h-top-bottom)*(max-v)/(max-min||1); currentPts.push({x,y});
       if(!started){ctx.moveTo(x,y);started=true}else ctx.lineTo(x,y);
     });
     ctx.stroke();
-    
-    // 比較グラフのドット装飾
     currentPts.forEach(p=>{
-      ctx.strokeStyle=color;
-      ctx.lineWidth=2;
-      ctx.fillStyle='#ffffff';
-      ctx.beginPath();
-      ctx.arc(p.x,p.y,4,0,Math.PI*2);
-      ctx.fill();
-      ctx.stroke();
+      ctx.strokeStyle=color; ctx.lineWidth=2; ctx.fillStyle='#ffffff'; ctx.beginPath(); ctx.arc(p.x,p.y,4,0,Math.PI*2); ctx.fill(); ctx.stroke();
     });
   });
 }
-function exportCSV(){const rows=[['date','weight_kg','health_memo','memo']];cat().records.forEach(r=>rows.push([r.date,r.weight,r.health||'',r.memo||'']));const csv='\ufeff'+rows.map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');download(csv,'catlog_records.csv','text/csv');}
-function exportJSON(){download(JSON.stringify(data,null,2),'catlog_backup.json','application/json')}
-function download(content,name,type){const a=document.createElement('a'),url=URL.createObjectURL(new Blob([content],{type}));a.href=url;a.download=name;a.click();URL.revokeObjectURL(url);toast('書き出しました')}
-function importJSON(e){const f=e.target.files[0];if(!f)return;const rd=new FileReader();rd.onload=()=>{try{const x=JSON.parse(rd.result);if(!x.cats||!Array.isArray(x.cats))throw 0;if(confirm('現在のデータをバックアップ内容で置き換えますか？')){data=x;save();toast('復元しました')}}catch(err){alert('バックアップファイルを読み込めませんでした')}};rd.readAsText(f)}
-load();render();if('serviceWorker'in navigator&&location.protocol.startsWith('http'))navigator.serviceWorker.register('./sw.js').catch(()=>{});
+
+function exportCSV(){
+  const c=cat(); if(!c.records.length){toast('記録がありません');return}
+  let csv='\ufeff日付,体重(kg),Sheba(g),ロイヤルカナン(g),健康缶(g),食事メモ,体調メモ,その他メモ\n';
+  c.records.forEach(r=>csv+=`"${r.date}",${r.weight},${r.sheba||0},${r.rc||0},${r.kan||0},"${(r.foodMemo||'').replace(/"/g,'""')}","${(r.health||'').replace(/"/g,'""')}","${(r.memo||'').replace(/"/g,'""')}"\n`);
+  const blob=new Blob([csv],{type:'text/csv;charset=utf-8;'});
+  const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`catlog_${c.name}_${new Date().toISOString().slice(0,10)}.csv`;link.click();
+}
+
+function exportJSON(){
+  const blob=new Blob([JSON.stringify(data)],{type:'application/json'});
+  const link=document.createElement('a');link.href=URL.createObjectURL(blob);link.download=`catlog_backup_${new Date().toISOString().slice(0,10)}.json`;link.click();
+}
+
+function importJSON(e){
+  const file=e.target.files; if(!file || !file.length)return;
+  const reader=new FileReader();
+  reader.onload=evt=>{
+    try{
+      const parsed=JSON.parse(evt.target.result);
+      if(parsed.cats){data=parsed;save();toast('データを復元しました')}else{toast('無効なファイル形式です')}
+    }catch(err){toast('ファイルの読み込みに失敗しました')}
+  };
+  reader.readAsText(file);
+}
+
+load();
+render();
 </script>
-</body></html>
+</body>
+</html>
