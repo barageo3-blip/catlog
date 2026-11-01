@@ -96,7 +96,7 @@ const DB='catlog_db_v1';
 let data={cats:[{id:'cat1',name:'福ちゃん',goal:'',records:[]}],activeCatId:'cat1'};
 let editingId=null;
 const $=id=>document.getElementById(id);
-const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats[0]||data.cats;
+const cat=()=>data.cats.find(c=>c.id===data.activeCatId)||data.cats;
 
 function load(){try{const x=localStorage.getItem(DB);if(x){const parsed=JSON.parse(x);if(parsed.cats&&parsed.cats.length)data=parsed}}catch(e){console.warn(e)}}
 function save(){localStorage.setItem(DB,JSON.stringify(data));render()}
@@ -148,7 +148,7 @@ function newRecord(id=null){
       
       <div class="full"><label>写真（任意）</label>
         <input id="rPhoto" type="file" accept="image/*">
-        <div id="photoPreview">${photo?'<img class="photo" src="'+photo+'">':''}</div>
+        <div id="photoPreview">${photo?'<img class="photo" src="'+photo+'" id="prevImg">':''}</div>
       </div>
     </div>
     <div class="row between" style="margin-top:16px;">
@@ -163,7 +163,7 @@ function newRecord(id=null){
     if (files && files.length > 0) {
       const reader = new FileReader();
       reader.onload = function(el) {
-        $('photoPreview').innerHTML = '<img class="photo" src="' + el.target.result + '" style="margin-top:8px;">';
+        $('photoPreview').innerHTML = '<img class="photo" src="' + el.target.result + '" id="prevImg" style="margin-top:8px;">';
       };
       reader.readAsDataURL(files[0]);
     }
@@ -180,18 +180,39 @@ function saveRecord(){
   r.kan = parseFloat($('rKan').value) || 0;
   r.foodMemo = $('rFoodMemo').value.trim();
   r.health=$('rHealth').value.trim(); r.memo=$('rMemo').value.trim();
-  const fileInput=$('rPhoto');
-  const hasFile=fileInput && fileInput.files && fileInput.files.length > 0;
+  
   const finish=()=>{
     if(!editingId)cat().records.push(r);
     cat().records.sort((a,b)=>a.date.localeCompare(b.date));
     const m=$('modal'); if(m) m.remove();
     save(); toast('記録を保存しました');
   };
-  if(hasFile){
-    const reader=new FileReader();
-    reader.onload=()=>{ r.photo=reader.result; finish(); };
-    reader.readAsDataURL(fileInput.files[0]); /* 👈 ここを正しく [0] に修正しました！ */
-  }else{ finish(); }
+
+  const imgEl = $('prevImg');
+  const fileInput = $('rPhoto');
+  
+  // ── 💡 写真の容量オーバー対策（自動縮小処理） ──
+  if(fileInput && fileInput.files && fileInput.files.length > 0 && imgEl) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    const img = new Image();
+    img.onload = function() {
+      // 最大幅を300ピクセルに縮小して軽量化
+      const maxW = 300;
+      const scale = maxW / img.width;
+      canvas.width = maxW;
+      canvas.height = img.height * scale;
+      ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+      r.photo = canvas.toDataURL('image/jpeg', 0.7); // 画質を少し落としてさらに軽量化
+      finish();
+    };
+    img.src = imgEl.src;
+  } else {
+    // 新しく写真を選ばなかった場合は、既存の写真をそのまま維持
+    if(editingId && !r.photo && imgEl) {
+      r.photo = imgEl.src;
+    }
+    finish();
+  }
 }
 
