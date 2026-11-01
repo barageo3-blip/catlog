@@ -107,25 +107,103 @@ function save(){localStorage.setItem(DB,JSON.stringify(data));render()}
 function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function toast(s){$('toast').textContent=s;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
 function showTab(t){document.querySelectorAll('main section').forEach(x=>x.classList.toggle('active',x.id===t));document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('active',x.dataset.tab===t));if(t==='compare')setupYears()}
-function newRecord(id=null){editingId=id;const r=id?cat().records.find(x=>x.id===id):null;
- const date=r?.date||new Date().toISOString().slice(0,10);
- const weight=r?.weight||'';
- const memo=r?.memo||'';
- const health=r?.health||'';
- const photo=r?.photo||'';
- const overlay=document.createElement('div');overlay.id='modal';overlay.style='position:fixed;inset:0;background:#0008;z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:12px';
- overlay.innerHTML=`<div style="background:white;border-radius:20px 20px 14px 14px;padding:20px;width:100%;max-width:620px;max-height:92vh;overflow:auto"><div class="row between"><h2>${r?'記録を編集':'体重を記録'}</h2><button class="ghost" onclick="document.getElementById('modal').remove()">閉じる</button></div>
- <div class="formgrid"><div><label>測定日</label><input id="rDate" type="date" value="${date}"></div><div><label>体重（kg）</label><input id="rWeight" type="number" min="0" step="0.01" value="${weight}" placeholder="例：5.20"></div>
- <div class="full"><label>体調・健康メモ</label><textarea id="rHealth" placeholder="食欲、便の状態、気になる症状など">${esc(health)}</textarea></div><div class="full"><label>その他のメモ</label><textarea id="rMemo" placeholder="気づいたこと">${esc(memo)}</textarea></div>
- <div class="full"><label>写真（任意）</label><input id="rPhoto" type="file" accept="image/*" capture="environment"><div id="photoPreview">${photo?'<img class="photo" src="'+photo+'">':''}</div></div></div>
- <button style="width:100%;margin-top:16px" onclick="saveRecord()">保存する</button></div>`;
- document.body.appendChild(overlay);
+function newRecord(id=null){
+  editingId=id;
+  const r=id?cat().records.find(x=>x.id===id):null;
+  const date=r?.date||new Date().toISOString().slice(0,10);
+  const weight=r?.weight||'';
+  const memo=r?.memo||'';
+  const health=r?.health||'';
+  const photo=r?.photo||'';
+  
+  // 食事データの初期値設定（記録があればそれを使い、なければデフォルト値を入れる）
+  const sheba = r?.sheba !== undefined ? r.sheba : 5;
+  const rc = r?.rc !== undefined ? r.rc : 15;
+  const kan = r?.kan !== undefined ? r.kan : 20;
+  const foodMemo = r?.foodMemo || '';
+
+  const overlay=document.createElement('div');
+  overlay.id='modal';
+  overlay.style='position:fixed;inset:0;background:#0008;z-index:20;display:flex;align-items:flex-end;justify-content:center;padding:12px';
+  overlay.innerHTML=`<div style="background:white;border-radius:20px 20px 14px 14px;padding:20px;width:100%;max-width:620px;max-height:92vh;overflow:auto">
+    <div class="row between"><h2>${r?'記録を編集':'体重を記録'}</h2><button class="ghost" onclick="document.getElementById('modal').remove()">閉じる</button></div>
+    <div class="formgrid">
+      <div><label>測定日</label><input id="rDate" type="date" value="${date}"></div>
+      <div><label>体重（kg）</label><input id="rWeight" type="number" min="0" step="0.01" value="${weight}" placeholder="例：5.20"></div>
+      
+      <!-- ── 新設：食事メモエリア ── -->
+      <div class="full" style="background:#fcfdfa; border:1px solid #e4e9e4; border-radius:12px; padding:14px; margin-top:10px;">
+        <h3 style="margin:0 0 10px; font-size:14px; color:#5b7568;">🍽️ 食事記録</h3>
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px;">
+          <div><label style="margin:0; font-size:11px;">Sheba (g)</label><input id="rSheba" type="number" min="0" value="${sheba}"></div>
+          <div><label style="margin:0; font-size:11px;">ロイヤルカナン (g)</label><input id="rRc" type="number" min="0" value="${rc}"></div>
+          <div><label style="margin:0; font-size:11px;">水分補給健康缶 (g)</label><input id="rKan" type="number" min="0" value="${kan}"></div>
+        </div>
+        <label style="margin-top:8px;">食事の例外メモ（トッピング等）</label>
+        <input id="rFoodMemo" type="text" value="${esc(foodMemo)}" placeholder="例：おやつを少しプラス、残したなど">
+      </div>
+
+      <div class="full"><label>体調・健康メモ</label><textarea id="rHealth" placeholder="食欲、便の状態、気になる症状など">${esc(health)}</textarea></div>
+      <div class="full"><label>その他のメモ</label><textarea id="rMemo" placeholder="気づいたこと">${esc(memo)}</textarea></div>
+      
+      <div class="full"><label>写真（任意）</label>
+        <!-- ギャラリー（ライブラリ）選択ができるように「capture="environment"」を削除 -->
+        <input id="rPhoto" type="file" accept="image/*">
+        <div id="photoPreview">${photo?'<img class="photo" src="'+photo+'">':''}</div>
+      </div>
+    </div>
+    <button style="width:100%;margin-top:16px" onclick="saveRecord()">保存する</button>
+  </div>`;
+  document.body.appendChild(overlay);
+
+  // 写真選択時のリアルタイムプレビュー処理
+  $('rPhoto').onchange = function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(el) {
+        $('photoPreview').innerHTML = '<img class="photo" src="' + el.target.result + '" style="margin-top:8px;">';
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 }
-function saveRecord(){const date=$('rDate').value,weight=parseFloat($('rWeight').value);if(!date||!Number.isFinite(weight)||weight<=0){toast('日付と正しい体重を入力してください');return}
- const r=editingId?cat().records.find(x=>x.id===editingId):{id:'r'+Date.now(),photo:''};
- r.date=date;r.weight=weight;r.health=$('rHealth').value.trim();r.memo=$('rMemo').value.trim();
- const file=$('rPhoto').files[0];const finish=()=>{if(!editingId)cat().records.push(r);cat().records.sort((a,b)=>a.date.localeCompare(b.date));$('modal').remove();save();toast('記録を保存しました')};
- if(file){const reader=new FileReader();reader.onload=()=>{r.photo=reader.result;finish()};reader.readAsDataURL(file)}else finish();
+
+function saveRecord(){
+  const date=$('rDate').value, weight=parseFloat($('rWeight').value);
+  if(!date||!Number.isFinite(weight)||weight<=0){toast('日付と正しい体重を入力してください');return}
+  
+  const r=editingId?cat().records.find(x=>x.id===editingId):{id:'r'+Date.now(),photo:''};
+  
+  r.date=date;
+  r.weight=weight;
+  
+  // 食事データの保存
+  r.sheba = parseFloat($('rSheba').value) || 0;
+  r.rc = parseFloat($('rRc').value) || 0;
+  r.kan = parseFloat($('rKan').value) || 0;
+  r.foodMemo = $('rFoodMemo').value.trim();
+  
+  r.health=$('rHealth').value.trim();
+  r.memo=$('rMemo').value.trim();
+  
+  const file=$('rPhoto').files[0];
+  const finish=()=>{
+    if(!editingId)cat().records.push(r);
+    cat().records.sort((a,b)=>a.date.localeCompare(b.date));
+    $('modal').remove();
+    save();
+    toast('記録を保存しました')
+  };
+  
+  if(file){
+    const reader=new FileReader();
+    reader.onload=()=>{r.photo=reader.result;finish()};
+    reader.readAsDataURL(file);
+  }else{
+    // 編集時に写真を変更しなかった場合、元の写真を維持する
+    finish();
+  }
 }
 function deleteRecord(id){if(!confirm('この記録を削除しますか？'))return;cat().records=cat().records.filter(x=>x.id!==id);save();toast('削除しました')}
 function saveSettings(){cat().name=$('catName').value.trim()||'猫ちゃん';cat().goal=$('goal').value;save();toast('設定を保存しました')}
