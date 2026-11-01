@@ -196,7 +196,88 @@ function importJSON(e){
   reader.onload=evt=>{ try{const parsed=JSON.parse(evt.target.result); if(parsed.cats){data=parsed;save();toast('復元しました')}else{toast('無効な形式です')}}catch(err){toast('失敗しました')} };
   reader.readAsText(file[0]);
 }
+<!-- データ管理（バックアップ機能）エリア -->
+<div style="margin: 20px 10px; padding: 15px; background: #ffffff; border-radius: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.05); text-align: center;">
+  <h3 style="margin-top: 0; color: #5b7568; font-family: 'Hiragino Kaku Gothic ProN', 'Meiryo UI', sans-serif; font-size: 16px;">💾 福ちゃんのデータ管理</h3>
+  <p style="font-size: 12px; color: #666; margin-bottom: 15px;">万が一に備えて、定期的にデータを保存しておくと安心です。</p>
+  
+  <div style="display: flex; gap: 10px; justify-content: center;">
+    <!-- バックアップボタン -->
+    <button id="btnExport" style="flex: 1; padding: 10px; background-color: #5b7568; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer;">
+      データを保存
+    </button>
+    
+    <!-- 復元ボタン（ダミーのボタンを押すと裏のinputが動く仕組み） -->
+    <button id="btnImportTrigger" style="flex: 1; padding: 10px; background-color: #f4f6f5; color: #5b7568; border: 1px solid #5b7568; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer;">
+      データを読み込む
+    </button>
+    <input type="file" id="fileImport" accept=".json" style="display: none;">
+  </div>
+</div>
+
 load(); render();
+// --- パート2：データ管理（バックアップ＆復元）の仕組み ---
+
+// 1. データをファイル（JSON）として保存する処理
+document.getElementById('btnExport').addEventListener('click', () => {
+  // localStorageから福ちゃんのデータをすべて取得（キー名はこれまでお使いのものに合わせてください。一般的な 'catlog_data' や 'fuku_data' など）
+  // ※もし正確なキー名が不明な場合は、一旦すべてのlocalStorageを対象にします
+  const allData = {};
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i);
+    allData[key] = localStorage.getItem(key);
+  }
+  
+  if (Object.keys(allData).length === 0) {
+    alert('保存するデータがまだありません。');
+    return;
+  }
+  
+  // ファイル化してダウンロードさせる魔法の処理
+  const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `fukuchan_data_${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  alert('福ちゃんのデータをファイルに保存しました！');
+});
+
+// 2. 「データを読み込む」ボタンが押されたら、裏にあるファイル選択画面を開く
+document.getElementById('btnImportTrigger').addEventListener('click', () => {
+  document.getElementById('fileImport').click();
+});
+
+// 3. ファイルが選択されたら、データを読み込んで復元する処理
+document.getElementById('fileImport').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    try {
+      const importedData = JSON.parse(event.target.result);
+      
+      if (confirm('データを復元しますか？（現在のデータは上書きされます）')) {
+        // 一度クリアして、ファイルから読み込んだデータを全て入れ直す
+        localStorage.clear();
+        for (const key in importedData) {
+          localStorage.setItem(key, importedData[key]);
+        }
+        
+        alert('福ちゃんのデータを復元しました！アプリを再起動します。');
+        window.location.reload(); // 画面をリフレッシュしてデータを反映
+      }
+    } catch (err) {
+      alert('ファイルの読み込みに失敗しました。正しいバックアップファイルか確認してください。');
+    }
+  };
+  reader.readAsText(file);
+});
+  
 </script>
 </body>
 </html>
