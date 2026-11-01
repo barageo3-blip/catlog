@@ -8,7 +8,15 @@
 <link rel="manifest" href="manifest.json">
 <style>
 :root{--bg:#f5f6f2;--card:#fff;--ink:#25332c;--muted:#718078;--accent:#5b7568;--accent2:#e5eee8;--line:#e4e9e4;--danger:#b64c4c;--shadow:0 5px 18px #26352b0c}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:system-ui,-apple-system,"Noto Sans JP",sans-serif;padding-bottom:88px}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--bg);
+  color:var(--ink);
+  /* ── 2. フォントの設定：メイリオUI風でスマホでも一番綺麗に見える組み合わせ ── */
+  font-family: "Hiragino Kaku Gothic ProN", "Meiryo UI", Meiryo, system-ui, -apple-system, "Noto Sans JP", sans-serif;
+  padding-bottom:88px;
+}
 header{background:var(--accent);color:white;padding:22px 18px 18px;border-radius:0 0 22px 22px}
 header .top{display:flex;align-items:center;justify-content:space-between;gap:12px}h1{font-size:23px;margin:0;font-weight:750}header p{margin:6px 0 0;color:#e5eee8;font-size:12px}
 main{max-width:720px;margin:auto;padding:16px}section{display:none}section.active{display:block}.card{background:var(--card);border-radius:17px;padding:16px;margin:0 0 14px;box-shadow:var(--shadow);border:1px solid #edf0ec}
