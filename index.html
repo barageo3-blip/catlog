@@ -187,21 +187,27 @@ function saveRecord(){
   r.health=$('rHealth').value.trim();
   r.memo=$('rMemo').value.trim();
   
-  const file=$('rPhoto').files[0];
+  const fileInput=$('rPhoto');
+  const hasFile=fileInput && fileInput.files && fileInput.files.length > 0;
+  
   const finish=()=>{
     if(!editingId)cat().records.push(r);
     cat().records.sort((a,b)=>a.date.localeCompare(b.date));
     $('modal').remove();
     save();
-    toast('記録を保存しました')
+    toast('記録を保存しました');
   };
   
-  if(file){
+  // ── 💡 ここが修正ポイントです ──
+  // 写真が新しく選択されている場合のみ読み込み処理を行い、ない場合はそのまま保存します
+  if(hasFile){
     const reader=new FileReader();
-    reader.onload=()=>{r.photo=reader.result;finish()};
-    reader.readAsDataURL(file);
+    reader.onload=()=>{
+      r.photo=reader.result;
+      finish();
+    };
+    reader.readAsDataURL(fileInput.files[0]);
   }else{
-    // 編集時に写真を変更しなかった場合、元の写真を維持する
     finish();
   }
 }
